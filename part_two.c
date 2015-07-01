@@ -79,11 +79,37 @@ void init()
 	getChar();
 }
 
-void expression()
+void term()
 {
 	char s[80];
-	snprintf(s, 80, "mov eax, %c", getNum());
+	snprintf(s, 80, "mov %%eax, %c", getNum());
 	emitLine(s);
+}
+
+void add()
+{
+	match('+');
+	term();
+	emitLine("add %ebx, %eax");
+}
+
+void subtract()
+{
+	match('-');
+	term();
+	emitLine("sub %ebx, %eax");
+}
+
+void expression()
+{
+	term();
+	emitLine("mov %ebx, %eax");
+	switch(look)
+	{
+		case '+': add(); break;
+		case '-': subtract(); break;
+		default: expected("addop"); break;
+	}
 }
 
 int main(int argc, char** argv)
