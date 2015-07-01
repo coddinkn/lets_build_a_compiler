@@ -3,5 +3,5 @@ CFLAGS = -Wall
 
 all: knc
 
-knc: cradle.c
+knc: part_two.c
 	$(CC) $(CFLAGS) $^ -o $@

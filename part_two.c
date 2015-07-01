@@ -79,8 +79,16 @@ void init()
 	getChar();
 }
 
+void expression()
+{
+	char s[80];
+	snprintf(s, 80, "mov eax, %c", getNum());
+	emitLine(s);
+}
+
 int main(int argc, char** argv)
 {
 	init();
+	expression();
 	exit(0);
 }
