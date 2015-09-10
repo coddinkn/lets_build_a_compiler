@@ -1,0 +1,14 @@
+#! /bin/bash
+
+rm test.s
+
+echo -e ".section .data\n" >> test.s
+echo -e ".section .text\n" >> test.s
+echo -e ".globl _start\n" >> test.s
+echo "_start:" >> test.s
+./knc >> test.s
+echo -e "\tmov %eax, %ebx" >> test.s
+echo -e "\tmov \$1, %eax" >> test.s
+echo -e "\tint \$0x80" >> test.s
+
+make -f testMakefile
