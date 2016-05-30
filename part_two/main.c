@@ -82,7 +82,7 @@ void init()
 void term()
 {
 	char s[80];
-	snprintf(s, 80, "mov $%c, %%eax", getNum());
+	snprintf(s, 80, "mov $%c, %%rax", getNum());
 	emitLine(s);
 }
 
@@ -90,23 +90,23 @@ void add()
 {
 	match('+');
 	term();
-	emitLine("pop %ebx");
-	emitLine("add %ebx, %eax");
+	emitLine("pop %rbx");
+	emitLine("add %rbx, %rax");
 }
 
 void subtract()
 {
 	match('-');
 	term();
-	emitLine("pop %ebx");
-	emitLine("sub %ebx, %eax");
-	emitLine("neg %eax");
+	emitLine("pop %rbx");
+	emitLine("sub %rbx, %rax");
+	emitLine("neg %rax");
 }
 
 void expression()
 {
 	term();
-	emitLine("push %eax");
+	emitLine("push %rax");
 	switch(look)
 	{
 		case '+': add(); break;
