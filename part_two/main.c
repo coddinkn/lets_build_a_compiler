@@ -41,6 +41,16 @@ void match(char x)
 	}
 }
 
+int isaddop(char c)
+{
+    return (c == '+') || (c == '-');
+}
+
+int ismulop(char c)
+{
+    return (c == '*') || (c == '/');
+}
+
 char getName()
 {
 	if(!isalpha(look))
@@ -79,11 +89,49 @@ void init()
 	getChar();
 }
 
+void factor()
+{
+    char s[80];
+    snprintf(s, 80, "mov $%c, %%rax", getNum());
+    emitLine(s);
+}
+
+void multiply()
+{
+    match('*');
+    factor();
+    emitLine("pop %rbx");
+    emitLine("mul %rbx");
+}
+
+void divide()
+{
+    match('/');
+    factor();
+    emitLine("pop %rbx");
+    emitLine("xor %rdx, %rdx");
+    emitLine("div %rbx");
+}
+
 void term()
 {
-	char s[80];
-	snprintf(s, 80, "mov $%c, %%rax", getNum());
-	emitLine(s);
+    factor();
+    while(ismulop(look))
+    {   
+    	emitLine("push %rax");
+        switch(look)
+        {
+            case '*':
+                multiply();
+                break;
+            case '/':
+                divide();
+                break;
+            default:
+                expected("mulop");
+                break;
+        }
+    }
 }
 
 void add()
@@ -106,13 +154,22 @@ void subtract()
 void expression()
 {
 	term();
-	emitLine("push %rax");
-	switch(look)
-	{
-		case '+': add(); break;
-		case '-': subtract(); break;
-		default: expected("addop"); break;
-	}
+    while(isaddop(look))
+    {
+    	emitLine("push %rax");
+    	switch(look)
+    	{
+    		case '+':
+                add();
+                break;
+    		case '-':
+                subtract();
+                break;
+    		default:
+                expected("addop");
+                break;
+    	}
+    }
 }
 
 int main(int argc, char** argv)
