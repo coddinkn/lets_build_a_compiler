@@ -4,6 +4,16 @@
 
 char look = '\0';
 
+int isaddop(char c)
+{
+    return (c == '+') || (c == '-');
+}
+
+int ismulop(char c)
+{
+    return (c == '*') || (c == '/');
+}
+
 void getChar()
 {
 	look = getchar();		

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
+void expression();
+
 char look = '\0';
 
 void getChar()
@@ -91,9 +93,18 @@ void init()
 
 void factor()
 {
-    char s[80];
-    snprintf(s, 80, "mov $%c, %%rax", getNum());
-    emitLine(s);
+    if(look == '(')
+    {
+        match('(');
+        expression();
+        match(')');
+    }
+    else
+    {
+        char s[80];
+        snprintf(s, 80, "mov $%c, %%rax", getNum());
+        emitLine(s);
+    }
 }
 
 void multiply()
@@ -108,7 +119,9 @@ void divide()
 {
     match('/');
     factor();
-    emitLine("pop %rbx");
+    emitLine("pop %rdx");
+    emitLine("mov %rax, %rbx");
+    emitLine("mov %rdx, %rax");
     emitLine("xor %rdx, %rdx");
     emitLine("div %rbx");
 }
@@ -153,22 +166,25 @@ void subtract()
 
 void expression()
 {
-	term();
+    if(isaddop(look))
+        emitLine("xor %rax, %rax");
+    else
+        term();
     while(isaddop(look))
     {
-    	emitLine("push %rax");
-    	switch(look)
-    	{
-    		case '+':
+        emitLine("push %rax");
+        switch(look)
+        {
+            case '+':
                 add();
                 break;
-    		case '-':
+            case '-':
                 subtract();
                 break;
-    		default:
+            default:
                 expected("addop");
                 break;
-    	}
+        }
     }
 }
 
