@@ -14,46 +14,46 @@ void getChar()
     } while(isspace(look));
 }
 
-void error(char* s)
+void error(char* string)
 {
-	printf("error: %s\n", s);
+	printf("error: %s\n", string);
 }
 
-void halt(char* s)
+void halt(char* string)
 {
-	error(s);
+	error(string);
 	exit(1);
 }
 
-void expected(char* s)
+void expected(char* string)
 {
-	char t[80];
-	snprintf(t, 80, "%s expected", s);
-	halt(t);
+	char error[80];
+	snprintf(error, 80, "%s expected", string);
+	halt(error);
 }
 
-void match(char x)
+void match(char character)
 {
-	if (look == x)
+	if (look == character)
 	{
 		getChar();
 	}
 	else
 	{
-		char s[80];
-		snprintf(s, 80, "'%c'", x);
-		expected(s);
+		char string[80];
+		snprintf(string, 80, "'%c'", character);
+		expected(string);
 	}
 }
 
-int isaddop(char c)
+int isaddop(char character)
 {
-    return (c == '+') || (c == '-');
+    return (character == '+') || (character == '-');
 }
 
-int ismulop(char c)
+int ismulop(char character)
 {
-    return (c == '*') || (c == '/');
+    return (character == '*') || (character == '/');
 }
 
 char getName()
@@ -62,9 +62,9 @@ char getName()
 	{
 		expected("name");
 	}
-	char c = toupper(look);
+	char name = toupper(look);
 	getChar();
-	return c;
+	return name;
 }
 
 char getNum()
@@ -73,25 +73,67 @@ char getNum()
 	{
 		expected("integer");
 	}
-	char n = look;
+	char number = look;
 	getChar();
-	return n;
+	return number;
 }
 
-void emit(char* s)
+void emit(char* string)
 {
-	printf("\t%s", s);
+	printf("%s", string);
 }
 
-void emitLine(char* s)
+void emitLine(char* string)
 {
-	emit(s);
+	emit(string);
 	printf("\n");
 }
 
 void init()
 {
 	getChar();
+    emitLine(".text");
+    emitLine(".globl _start");
+    emitLine("_start:");
+}
+
+void finish()
+{
+    emitLine("mov %rax, %rdi");
+    emitLine("mov $60, %rax");
+    emitLine("syscall");
+}
+
+void assignment()
+{
+    char name = getName();
+    char string[80];
+    match('=');
+    expression();
+    snprintf(string, 80, ".comm %c,4,4", name);
+    emitLine(string);
+    snprintf(string, 80, "lea %c(%%rip), %%rbx", name);
+    emitLine(string);
+    emitLine("mov %rax, (%rbx)");
+}
+
+
+void identify()
+{
+    char name = getName();
+    char string[80];
+    if(look == '(')
+    {
+        match('(');
+        match(')');
+        snprintf(string, 80, "jmp %c", name);
+        emitLine(string);
+    }
+    else
+    {
+        snprintf(string, 80, "mov %c(%%rip), %%rax", name);
+        emitLine(string);
+    }
 }
 
 void factor()
@@ -102,11 +144,15 @@ void factor()
         expression();
         match(')');
     }
+    else if(isalpha(look))
+    {
+        identify();
+    }
     else
     {
-        char s[80];
-        snprintf(s, 80, "mov $%c, %%rax", getNum());
-        emitLine(s);
+        char string[80];
+        snprintf(string, 80, "mov $%c, %%rax", getNum());
+        emitLine(string);
     }
 }
 
@@ -194,6 +240,7 @@ void expression()
 int main(int argc, char** argv)
 {
 	init();
-	expression();
+    assignment();
+    finish();
 	exit(0);
 }
