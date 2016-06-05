@@ -56,25 +56,47 @@ int ismulop(char character)
     return (character == '*') || (character == '/');
 }
 
-char getName()
+char* getName()
 {
-	if(!isalpha(look))
+    if(!isalpha(look))
 	{
 		expected("name");
 	}
-	char name = toupper(look);
-	getChar();
+	char name[40];
+    int letter = 0;
+    while(isalnum(look) && letter < 40)
+    {
+        name[letter] = look;
+        getChar();   
+        letter++;
+    }
+    name[letter] = '\0';
+    if(letter == 40 && isalnum(look))
+    {
+        halt("name too long");      
+    }
 	return name;
 }
 
-char getNum()
+char* getNum()
 {
 	if(!isdigit(look))
 	{
-		expected("integer");
+		expected("number");
 	}
-	char number = look;
-	getChar();
+	char number[40];
+    int digit = 0;
+    while(isdigit(look) && digit < 40)
+    {
+        number[digit] = look;
+        getChar();   
+        digit++;
+    }
+    number[digit] = '\0';
+    if(digit == 40 && isdigit(look))
+    {
+        halt("number too large");      
+    }
 	return number;
 }
 
@@ -106,13 +128,13 @@ void finish()
 
 void assignment()
 {
-    char name = getName();
+    char* name = getName();
     char string[80];
     match('=');
     expression();
-    snprintf(string, 80, ".comm %c,4,4", name);
+    snprintf(string, 80, ".comm %s,4,4", name);
     emitLine(string);
-    snprintf(string, 80, "lea %c(%%rip), %%rbx", name);
+    snprintf(string, 80, "lea %s(%%rip), %%rbx", name);
     emitLine(string);
     emitLine("mov %rax, (%rbx)");
 }
@@ -120,18 +142,18 @@ void assignment()
 
 void identify()
 {
-    char name = getName();
+    char* name = getName();
     char string[80];
     if(look == '(')
     {
         match('(');
         match(')');
-        snprintf(string, 80, "jmp %c", name);
+        snprintf(string, 80, "jmp %s", name);
         emitLine(string);
     }
     else
     {
-        snprintf(string, 80, "mov %c(%%rip), %%rax", name);
+        snprintf(string, 80, "mov %s(%%rip), %%rax", name);
         emitLine(string);
     }
 }
@@ -151,7 +173,7 @@ void factor()
     else
     {
         char string[80];
-        snprintf(string, 80, "mov $%c, %%rax", getNum());
+        snprintf(string, 80, "mov $%s, %%rax", getNum());
         emitLine(string);
     }
 }
