@@ -6,12 +6,17 @@ void expression();
 
 char look = '\0';
 
+int iswhitespace(char character)
+{
+    return (character == ' ') || (character == '\t');
+}
+
 void getChar()
 {
 	do
     {
         look = getchar();		
-    } while(isspace(look));
+    } while(iswhitespace(look));
 }
 
 void error(char* string)
@@ -62,7 +67,7 @@ char* getName()
 	{
 		expected("name");
 	}
-	char name[40];
+	char* name = malloc(sizeof(char) * 40);
     int letter = 0;
     while(isalnum(look) && letter < 40)
     {
@@ -84,7 +89,7 @@ char* getNum()
 	{
 		expected("number");
 	}
-	char number[40];
+	char* number = malloc(sizeof(char) * 40);
     int digit = 0;
     while(isdigit(look) && digit < 40)
     {
@@ -137,6 +142,7 @@ void assignment()
     snprintf(string, 80, "lea %s(%%rip), %%rbx", name);
     emitLine(string);
     emitLine("mov %rax, (%rbx)");
+    free(name);
 }
 
 
@@ -149,13 +155,13 @@ void identify()
         match('(');
         match(')');
         snprintf(string, 80, "jmp %s", name);
-        emitLine(string);
     }
     else
     {
         snprintf(string, 80, "mov %s(%%rip), %%rax", name);
-        emitLine(string);
     }
+    emitLine(string);
+    free(name);
 }
 
 void factor()
